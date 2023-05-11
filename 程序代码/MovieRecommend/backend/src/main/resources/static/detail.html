@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>电影推荐系统</title>
+    <link rel="stylesheet" href="plugins/element-ui/element.css" />
+    <link rel="stylesheet" href="styles/common.css" />
+    <link rel="stylesheet" href="styles/icon/iconfont.css" />
+    <link rel="stylesheet" href="styles/page.css" />
+    <link rel="stylesheet" href="styles/detail.css" />
+    <style>
+
+        .bottom {
+            margin-top: 13px;
+            line-height: 12px;
+        }
+
+        .button {
+            padding: 0;
+            float: right;
+        }
+
+        .image {
+            height: 100%;
+            width: 100%;
+            display: block;
+        }
+
+        .clearfix:before,
+        .clearfix:after {
+            display: table;
+            content: "";
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+    </style>
+</head>
+<body>
+<!---------------------------------------------------------------------------------------------------->
+
+<div class="bjimg" id="app" >
+    <div>
+        <el-button type="success" @click="back()" left="0" > 返回首页</el-button>
+    </div>
+
+    <div class="header">
+        {{movie.title}}
+    </div>
+    <div  >
+        <!----------------->
+        <div
+                class="tableBar"
+                style="display: inline-block"
+        >
+        </div>
+        <!------------------>
+        <el-row :gutter="100">
+            <el-col :span='8' :offset=2 >
+                <el-card :body-style="{ padding: '0px' }">
+                    <img :src=movie.imgUrl class="image">
+                </el-card>
+            </el-col>
+            <!------------------------>
+            <el-col :span='8'  >
+                <div class="font">
+                    <!--{{movies[this.showindex].description }}-->
+                    <p>导演及主演：{{movie.director}} </p>
+                    <p>类别：{{movie.category}}</p>
+                    <p>国家：{{movie.country}} </p>
+                    <p>年份：{{movie.year}}</p>
+                    <p>剧情简介：{{movie.summary}}</p>
+                    <p>平均评分：{{movie.avgscore}}</p>
+                    <p>请你打分：</p>
+
+                </div>
+                <el-rate
+                        v-model="value"
+                        show-score
+                        text-color="#ff9900"
+                        score-template="{value}"
+                        @change="rate"
+                >
+                </el-rate>
+            </el-col>
+<!--            <div  class="text" >-->
+<!--                <p class="font-footer">剧情简介：</p>-->
+<!--                <p class="font-footer">{{movie.summary }} </p>-->
+<!--            </div>-->
+
+        </el-row>
+    </div>
+</div>
+<!------------------------------------------------------------------------------------------------------>
+<script src="plugins/vue/vue.js"></script>
+<!-- 引入组件库 -->
+<script src="plugins/element-ui/element.js"></script>
+<!-- 引入axios -->
+<script src="plugins/axios/axios.min.js"></script>
+
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                value: 0,
+                showindex: 0,
+                show: {},
+                currentDate: new Date(),
+                movie:{
+                    id:'',
+                    title:'',
+                    src:'',
+                    director:'',
+                    summary:'',
+                    imgUrl:'',
+                    year:'',
+                    country:'',
+                    category:'',
+                    movieId:'',
+                    avgscore:''
+                },
+                movieRating:{
+                    userId:'',
+                    movieId:'',
+                    score:''
+                },
+                id:'',
+                userInfo:{
+                },
+            };
+        },
+        methods: {
+            back(){
+                window.location.href="index.html"
+            },
+            getMovie(){
+                var _this=this;
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/common?id="+_this.id
+                }).then(resp=>{
+                    if(resp.data.code===1){
+                        this.movie=resp.data.data
+                        this.movieRating.userId=this.userInfo.data.id
+                        this.movieRating.movieId=this.id
+                    }
+                })
+            },
+            rate(){
+                this.movieRating.score=this.value
+                localStorage.setItem('mId',this.id)
+                var _this=this;
+                axios({
+                    method:"post",
+                    url:"http://localhost:8080/common",
+                    data: _this.movieRating
+                }).then(resp=>{
+                    if(resp.data.code===1){
+
+                    }
+                })
+                console.log(this.value)
+            }
+
+        },
+        created(){
+            const movieId = window.localStorage.getItem('movieId')
+            const userInfo = window.localStorage.getItem('userInfo')
+            if (userInfo) {
+                this.userInfo = JSON.parse(userInfo)
+            }
+            if (movieId!=null) {
+                this.id = movieId
+                console.log(this.id)
+            }
+            this.getMovie()
+        }
+    })
+</script>
+</body>
+</html>

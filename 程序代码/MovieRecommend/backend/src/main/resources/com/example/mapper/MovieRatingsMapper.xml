@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.MovieRatingsMapper">
+    <resultMap id="ResultMap" type="com.example.pojo.MyMovies">
+        <!--
+    id:完成主键字段的映射 column:表的列名
+    property:实体类的属性名 result:完成一般字段的映射
+    column:表的列名 property:实体类的属性名
+    -->
+        <result column="img_url" property="imgUrl"/>
+        <result column="user_id" property="userId"/>
+    </resultMap>
+
+    <select id="getMyMovies" resultMap="ResultMap">
+        select id,title,img_url,avgscore,user_id,score from movie_ratings mr, movies_score mc
+        where mr.movie_id=mc.id and user_id=#{userId}
+        limit #{begin}, #{pageSize};
+    </select>
+</mapper>

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>电影推荐系统</title>
+    <link rel="stylesheet" href="plugins/element-ui/element.css" />
+    <link rel="stylesheet" href="styles/common.css" />
+    <link rel="stylesheet" href="styles/index.css" />
+    <link rel="stylesheet" href="styles/icon/iconfont.css" />
+    <link rel="stylesheet" href="styles/page.css" />
+    <style>
+        .time {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .bottom {
+            margin-top: 13px;
+            line-height: 12px;
+        }
+
+        .button {
+            padding: 0;
+            float: right;
+        }
+
+        .image {
+            width: 100%;
+            display: block;
+        }
+
+        .clearfix:before,
+        .clearfix:after {
+            display: table;
+            content: "";
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container" id="app">
+    <!----------------------------------------------------------------------->
+
+    <div class="container">
+        <div
+                class="tableBar"
+                style="display: inline-block"
+        >
+            <el-button
+                    type="primary"
+                    @click="addClass('meal')"
+            >
+               猜你喜欢
+            </el-button>
+        </div>
+        <el-row>
+            <el-col :span="18">
+                <el-col :span='4' v-for="(o, index) in recommend" :key="o" :offset="0">
+                    <el-card :body-style="{ padding: '0px' }">
+                        <el-image
+                                style="width: 200px; height: 240px"
+                                :src=o.imgUrl
+                                fit=cover></el-image>
+                        <div style="padding: 14px;">
+                            <span>{{o.title}}</span>
+                            <div class="bottom clearfix">
+                                <time class="time">评分：{{ o.avgscore }}</time>
+                                <el-button type="text" class="button" @click="getMovie(o.id)">详情</el-button>
+
+                            </div>
+                        </div>
+                    </el-card>
+                </el-col>
+            </el-col>
+            <!------------------->
+            <el-col :span="5" :offset="1">
+                <div >
+                    <el-button
+                            type="primary"
+                    >
+                        电影热度排行top10
+                    </el-button>
+                    <el-button
+                            type="primary"
+                            @click="getHotMovies"
+                    >
+                        刷新
+                    </el-button>
+                    <el-table
+                            :data="movieCount"
+                            border
+                            style="width: 100%">
+
+                        <el-table-column
+                                prop="title"
+                                label="影片名"
+                                width="150">
+                        </el-table-column>
+                        <el-table-column
+                                prop="counts"
+                                label="评论人数"
+                                width="80">
+                        </el-table-column>
+                        <el-table-column
+                                label="操作"
+                                width="60"
+                        >
+                            <template slot-scope="scope">
+                                <span @click="getMovie(scope.row.id)">查看</span>
+                            </template>
+                        </el-table-column>
+
+                    </el-table>
+                </div>
+            </el-col>
+
+        </el-row>
+
+
+
+
+
+
+    </div>
+    <!-------------------------------------------------------------------------------------------------->
+
+    <div class="container">
+        <div
+                class="tableBar"
+                style="display: inline-block"
+        >
+            <el-button
+                    type="primary"
+                    @click="addClass('meal')"
+            >
+                我看过的
+            </el-button>
+        </div>
+        <el-row>
+            <el-col :span="18">
+                <el-col :span='4' v-for="(o, index) in myMovies" :key="o" :offset="0">
+                    <el-card :body-style="{ padding: '0px' }">
+                        <el-image
+                                style="width: 200px; height: 240px"
+                                :src=o.imgUrl
+                                fit=cover></el-image>
+                        <div style="padding: 14px;">
+                            <span>{{o.title}}</span>
+                            <div class="bottom clearfix">
+                                <time class="time">平均评分：{{ o.avgscore }}</time>
+<!--                                <time class="time">我的评分：{{ o.score }}</time>-->
+                                <el-button type="text" class="button" @click="getMovie(o.id)">详情</el-button>
+
+                            </div>
+                        </div>
+                    </el-card>
+                </el-col>
+            </el-col>
+            <!------------------->
+            <el-col :span="5" :offset="1">
+                <div >
+                    <el-button
+                            type="primary"
+                            @click="addClass('meal')"
+                    >
+                        电影评分排行top10
+                    </el-button>
+                    <el-table
+                            :data="highMovies"
+                            border
+                            style="width: 100%">
+
+                        <el-table-column
+                                prop="title"
+                                label="影片名"
+                                width="150">
+                        </el-table-column>
+                        <el-table-column
+                                prop="avgscore"
+                                label="平均评分"
+                                width="80">
+                        </el-table-column>
+                        <el-table-column
+                                label="操作"
+                                width="60"
+                        >
+                            <template slot-scope="scope">
+                                <span @click="getMovie(scope.row.id)">查看</span>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+            </el-col>
+        </el-row>
+        <el-pagination
+                class="pageList"
+                :page-sizes="[12]"
+                :page-size="pageSize"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="counts"
+                :current-page.sync="page"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+        ></el-pagination>
+
+
+
+
+
+    </div>
+    <!------------------------------------------------------------------------------>
+
+</div>
+
+<script src="plugins/vue/vue.js"></script>
+<!-- 引入组件库 -->
+<script src="plugins/element-ui/element.js"></script>
+<!-- 引入axios -->
+<script src="plugins/axios/axios.min.js"></script>
+
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                fits: ['fill', 'contain', 'cover', 'none', 'scale-down'],
+                userInfo:{
+                },
+                currentDate: new Date(),
+                recommend:[
+                    {
+                        id:'',
+                        title:'',
+                        src:'',
+                        director:'',
+                        summary:'',
+                        imgUrl:'',
+                        year:'',
+                        country:'',
+                        category:'',
+                        movieId:'',
+                        avgscore:''
+                    }
+                ],
+                movieCount:[
+                    {
+                        id:'',
+                        title:'',
+                        counts:''
+                    }
+                ],
+                highMovies:[
+                    {
+                        id:'',
+                        title:'',
+                        src:'',
+                        director:'',
+                        summary:'',
+                        imgUrl:'',
+                        year:'',
+                        country:'',
+                        category:'',
+                        movieId:'',
+                        avgscore:''
+                    }
+                ],
+                myMovies:[
+                    {
+                        id:'',
+                        title:'',
+                        imgUrl:'',
+                        avgscore:'',
+                        userId:'',
+                        score:''
+                    }
+                ],
+                movieRating:{
+                    userId:'',
+                    movieId:'',
+                    score:''
+                },
+                page: 1,
+                pageSize: 12,
+                counts:'',
+                movieId:''
+            };
+        },
+        methods: {
+            detail(a){
+                window.location.href= 'detail.html'
+            },
+            getMoviesForUser(){
+                var _this=this;
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/recommend/forUser?userId="+_this.userInfo.data.id,
+                }).then(resp=>{
+                    if(resp.data.code===1){
+                        this.recommend=resp.data.data
+                    }
+                })
+            },
+            getHotMovies(){
+                var _this=this;
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/hotMovies"
+                }).then(resp=>{
+                    if(resp.data.code===1){
+                        this.movieCount=resp.data.data
+                    }
+                })
+            },
+            getHighMovies(){
+                var _this=this;
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/rateTop10?page=1&pageSize=10"
+                }).then(resp=>{
+                    if(resp.data.code===1){
+                        this.highMovies=resp.data.data.records
+                    }
+                })
+            },
+            getMyMovies(){
+                var _this=this;
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/myMovies?userId="+_this.userInfo.data.id+"&page="+_this.page+"&pageSize="+_this.pageSize
+                }).then(resp=>{
+                    if(resp.data.code===1){
+                        this.myMovies=resp.data.data.myMovies
+                        this.counts=resp.data.data.total
+                    }
+                })
+            },
+            handleCurrentChange (val) {
+                this.page = val
+                console.log(val)
+                this.getMyMovies()
+            },
+            getMovie(val){
+                console.log(val)
+                localStorage.setItem('movieId',val)
+                window.location.href= 'detail.html'
+            }
+
+
+        },
+        created(){
+            const userInfo = window.localStorage.getItem('userInfo')
+            if (userInfo) {
+                this.userInfo = JSON.parse(userInfo)
+            }
+            const mId = window.localStorage.getItem('mId')
+            this.movieId=mId
+            if(this.movieId!=null){
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/recommend/onMovie?movieId="+this.movieId,
+                }).then(resp=>{
+                    if(resp.data.code===1){
+                        this.recommend=resp.data.data
+                    }
+                })
+            }else{
+                this.getMoviesForUser()
+
+            }
+
+            console.log(this.userInfo)
+            this.getHotMovies()
+            this.getHighMovies()
+            this.getMyMovies()
+        }
+    })
+</script>
+</body>
+</html>

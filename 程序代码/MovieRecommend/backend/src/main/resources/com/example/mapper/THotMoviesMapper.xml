@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.THotMoviesMapper">
+    <resultMap id="countResultMap" type="com.example.pojo.MovieCount">
+        <!--
+    id:完成主键字段的映射 column:表的列名
+    property:实体类的属性名 result:完成一般字段的映射
+    column:表的列名 property:实体类的属性名
+    -->
+
+    </resultMap>
+
+    <select id="getHotMovies" resultMap="countResultMap">
+        select id, title, counts
+        from movies_score m, (select * from t_hot_movies ORDER BY counts DESC LIMIT 10) t
+        where t.movie_id=m.id ORDER BY counts desc;
+    </select>
+</mapper>

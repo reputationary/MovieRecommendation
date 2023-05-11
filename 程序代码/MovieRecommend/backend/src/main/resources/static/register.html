@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="" xmlns="">
+<head>
+    <meta charset="UTF-8">
+    <title>注册</title>
+    <link rel="shortcut icon" href="favicon.ico">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="plugins/element-ui/element.css" />
+    <link rel="stylesheet" href="styles/common.css">
+    <link rel="stylesheet" href="styles/register.css">
+    <link rel="stylesheet" href="styles/icon/iconfont.css" />
+</head>
+
+<body>
+<div class="login-wrap" id="register">
+    <el-form v-model="userInfo" class="login-container">
+        <h1 class="title">用户注册</h1>
+        <el-form-item>
+            <el-input type="text" placeholder="用户账号" v-model="userInfo.username" autocomplete="off">{{userInfo.username}}</el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-input type="password" placeholder="用户密码" v-model="userInfo.password" autocomplete="off">{{userInfo.password}}</el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-input type="password" placeholder="确认密码" v-model="password1" autocomplete="off">{{password1}}</el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="send" style="width: 100%;">注册</el-button>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="toLogin" style="width: 100%;">返回登录</el-button>
+        </el-form-item>
+
+    </el-form>
+</div>
+</body>
+
+<!-- 开发环境版本，包含了有帮助的命令行警告 -->
+<!--引入Vue-->
+<script src="plugins/vue/vue.js"></script>
+<!-- 引入组件库 -->
+<script src="plugins/element-ui/element.js"></script>
+<!-- 引入axios -->
+<script src="plugins/axios/axios.min.js"></script>
+
+
+<script>
+ new Vue({
+        el:'#register',
+        data: function() {
+            return {
+                userInfo:{
+                    username: '',
+                    password: ''
+                },
+                password1:'',
+            }
+        },
+
+        methods: {
+
+            toLogin(){
+                window.location.href="login2.html"
+            },
+
+            send (){
+                var _this=this
+                if(this.password1==this.userInfo.password){
+                    axios({
+                        method:"post",
+                        url:"http://localhost:8080/user/signUp",
+                        data:_this.userInfo
+                    }).then(resp=>{
+                        if(resp.data.code===1){
+                            window.location.href="login2.html"
+                        }
+                    })
+                }else{
+                    this.$message.error("请确认密码")
+
+                }
+            }
+
+        }
+
+    })
+</script>
+
+</html>
